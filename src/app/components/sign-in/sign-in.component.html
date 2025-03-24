@@ -1,0 +1,94 @@
+<div class="auth-container">
+  <!-- Left Section -->
+  <div class="auth-left">
+    
+    <h2 *ngIf="isLoginMode">Welcome Back!</h2>
+    <h2 *ngIf="!isLoginMode">Hello, Friend!</h2>
+    
+    <p *ngIf="isLoginMode">To keep connected with us please login with your personal info</p>
+    <p *ngIf="!isLoginMode">Enter your personal details and start your journey with us</p>
+    
+    <button mat-flat-button class="toggle-btn" (click)="toggleForm()">
+      {{ isLoginMode ? 'SIGN UP' : 'SIGN IN' }}
+    </button>
+  </div>
+  
+  <!-- Right Section -->
+  <div class="auth-right">
+    <h2>{{ isLoginMode ? 'Sign in' : 'Create Account' }}</h2>
+    
+    <div class="social-login">
+      <button mat-mini-fab class="social-btn">
+        <mat-icon>facebook</mat-icon>
+      </button>
+      <button mat-mini-fab class="social-btn">
+        <mat-icon>g_translate</mat-icon>
+      </button>
+      <button mat-mini-fab class="social-btn">
+        <mat-icon>linkedin</mat-icon>
+      </button>
+    </div>
+    
+    <p class="small-text">or use your {{ isLoginMode ? 'email account' : 'email for registration' }}</p>
+    
+    <!-- Success and Error Messages -->
+    <div *ngIf="successMessage" class="message success-message">
+      {{ successMessage }}
+    </div>
+    
+    <div *ngIf="errorMessage" class="message error-message">
+      {{ errorMessage }}
+    </div>
+    
+    <form [formGroup]="authForm" (ngSubmit)="onSubmit()">
+      <mat-form-field class="full-width" *ngIf="!isLoginMode">
+        <mat-label>Name</mat-label>
+        <input matInput formControlName="name" placeholder="Name">
+        <mat-icon matPrefix>person</mat-icon>
+        <mat-error *ngIf="authForm.get('name')?.errors?.['required']">
+          Name is required
+        </mat-error>
+        <mat-error *ngIf="authForm.get('name')?.errors?.['minlength']">
+          Name must be at least 3 characters
+        </mat-error>
+      </mat-form-field>
+      
+      <mat-form-field class="full-width">
+        <mat-label>Email</mat-label>
+        <input matInput type="email" formControlName="email" placeholder="Email">
+        <mat-icon matPrefix>email</mat-icon>
+        <mat-error *ngIf="authForm.get('email')?.errors?.['required']">
+          Email is required
+        </mat-error>
+        <mat-error *ngIf="authForm.get('email')?.errors?.['email'] || authForm.get('email')?.errors?.['invalidEmailFormat']">
+          Please enter a valid email address
+        </mat-error>
+      </mat-form-field>
+      
+      <mat-form-field class="full-width">
+        <mat-label>Password</mat-label>
+        <input matInput type="password" formControlName="password" placeholder="Password">
+        <mat-icon matPrefix>lock</mat-icon>
+        <mat-error>{{ getPasswordError() }}</mat-error>
+      </mat-form-field>
+      
+      <mat-form-field class="full-width" *ngIf="!isLoginMode">
+        <mat-label>Confirm Password</mat-label>
+        <input matInput type="password" formControlName="confirmPassword" placeholder="Confirm Password">
+        <mat-icon matPrefix>lock</mat-icon>
+        <mat-error *ngIf="authForm.get('confirmPassword')?.errors?.['required']">
+          Please confirm your password
+        </mat-error>
+        <mat-error *ngIf="authForm.errors?.['passwordMismatch'] && !authForm.get('confirmPassword')?.errors?.['required']">
+          Passwords do not match
+        </mat-error>
+      </mat-form-field>
+      
+      <a href="#" class="forgot-password" *ngIf="isLoginMode">Forgot your password?</a>
+      
+      <button mat-flat-button color="primary" class="full-width submit-btn" type="submit" [disabled]="authForm.invalid">
+        {{ isLoginMode ? 'SIGN IN' : 'SIGN UP' }}
+      </button>
+    </form>
+  </div>
+</div>

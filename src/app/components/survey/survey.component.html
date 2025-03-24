@@ -1,0 +1,80 @@
+<div class="survey-container">
+  <!-- Header -->
+  <mat-toolbar color="primary" class="header">
+    <div class="brand">
+      <img src="assets/logo.png" alt="Diprella" class="logo" />
+      <span class="brand-name">Diprella</span>
+    </div>
+    <span class="spacer"></span>
+    <span class="user-greeting" *ngIf="currentUser">Welcome, {{currentUser.name}}</span>
+    <button mat-button (click)="logout()">
+      <mat-icon>exit_to_app</mat-icon>
+      Logout
+    </button>
+  </mat-toolbar>
+
+  <!-- Survey Content -->
+  <div class="survey-content">
+    <mat-card>
+      <mat-card-header>
+        <mat-card-title>Customer Feedback Survey</mat-card-title>
+        <mat-card-subtitle>Your feedback helps us improve our services</mat-card-subtitle>
+      </mat-card-header>
+
+      <mat-card-content>
+        <!-- Success Message -->
+        <div *ngIf="successMessage" class="message success-message">
+          {{ successMessage }}
+        </div>
+
+        <form [formGroup]="surveyForm" (ngSubmit)="onSubmit()">
+          <div class="question-container" *ngFor="let question of surveyQuestions">
+            <h3 class="question-text">
+              {{ question.question }}
+              <span class="required-indicator" *ngIf="question.required">*</span>
+            </h3>
+
+            <!-- Text Input -->
+            <mat-form-field class="full-width" *ngIf="question.type === 'text'">
+              <input matInput [formControlName]="question.id" [placeholder]="question.question">
+              <mat-error>{{ getErrorMessage(question.id) }}</mat-error>
+            </mat-form-field>
+
+            <!-- Number Input -->
+            <mat-form-field class="full-width" *ngIf="question.type === 'number'">
+              <input matInput type="number" [formControlName]="question.id" [placeholder]="question.question">
+              <mat-error>{{ getErrorMessage(question.id) }}</mat-error>
+            </mat-form-field>
+
+            <!-- Radio Buttons -->
+            <div *ngIf="question.type === 'radio'" class="radio-group">
+              <mat-radio-group [formControlName]="question.id" class="full-width">
+                <mat-radio-button *ngFor="let option of question.options" [value]="option" class="radio-option">
+                  {{ option }}
+                </mat-radio-button>
+              </mat-radio-group>
+              <mat-error *ngIf="surveyForm.get(question.id)?.invalid && surveyForm.get(question.id)?.touched">
+                {{ getErrorMessage(question.id) }}
+              </mat-error>
+            </div>
+
+            <!-- Multi-select -->
+            <mat-form-field class="full-width" *ngIf="question.type === 'multiselect'">
+              <mat-label>{{ question.question }}</mat-label>
+              <mat-select [formControlName]="question.id" multiple>
+                <mat-option *ngFor="let option of question.options" [value]="option">{{ option }}</mat-option>
+              </mat-select>
+              <mat-error>{{ getErrorMessage(question.id) }}</mat-error>
+            </mat-form-field>
+          </div>
+
+          <div class="form-actions">
+            <button mat-flat-button color="primary" class="submit-btn" type="submit" [disabled]="submitted && surveyForm.invalid">
+              Submit Survey
+            </button>
+          </div>
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

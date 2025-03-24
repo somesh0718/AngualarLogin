@@ -1,0 +1,40 @@
+.header {
+    width: 100%;
+    background-color: #1976d2; /* Material UI Primary Blue */
+    color: white;
+    padding: 15px 20px;
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+  }
+  
+  .header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
+  .logo {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+    flex: 1;  /* Takes available space to push "Logout" to the right */
+    text-align: left;
+  }
+  
+  .logout {
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    text-decoration: underline;
+    text-align: right;
+    flex: 0; /* Prevents growing */
+    margin-right: 2rem;
+  }
+  
+  .logout:hover {
+    opacity: 0.8;
+  }
+  
