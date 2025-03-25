@@ -2,8 +2,7 @@
   <!-- Header -->
   <mat-toolbar color="primary" class="header">
     <div class="brand">
-      <img src="assets/logo.png" alt="Diprella" class="logo" />
-      <span class="brand-name">Diprella</span>
+      <span class="brand-name">Survey Form</span>
     </div>
     <span class="spacer"></span>
     <span class="user-greeting" *ngIf="currentUser">Welcome, {{currentUser.name}}</span>
@@ -17,8 +16,8 @@
   <div class="survey-content">
     <mat-card>
       <mat-card-header>
-        <mat-card-title>Customer Feedback Survey</mat-card-title>
-        <mat-card-subtitle>Your feedback helps us improve our services</mat-card-subtitle>
+        <mat-card-title>Personal Details Survey</mat-card-title>
+        <mat-card-subtitle>Please provide your personal information</mat-card-subtitle>
       </mat-card-header>
 
       <mat-card-content>
@@ -57,6 +56,15 @@
                 {{ getErrorMessage(question.id) }}
               </mat-error>
             </div>
+
+            <!-- Dropdown -->
+            <mat-form-field class="full-width" *ngIf="question.type === 'dropdown'">
+              <mat-label>{{ question.question }}</mat-label>
+              <mat-select [formControlName]="question.id">
+                <mat-option *ngFor="let option of question.options" [value]="option">{{ option }}</mat-option>
+              </mat-select>
+              <mat-error>{{ getErrorMessage(question.id) }}</mat-error>
+            </mat-form-field>
 
             <!-- Multi-select -->
             <mat-form-field class="full-width" *ngIf="question.type === 'multiselect'">

@@ -12,19 +12,20 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { NgFor, NgIf } from '@angular/common';
 import { Router } from '@angular/router';
 
+interface SurveyQuestionValidation {
+  type: string;
+  value?: any;
+  message: string;
+}
+
 interface SurveyQuestion {
   id: string;
-  type: 'text' | 'radio' | 'multiselect' | 'number';
+  type: 'text' | 'radio' | 'multiselect' | 'number' | 'dropdown';
   question: string;
   required: boolean;
   options?: string[];
-  validations?: {
-    type: string;
-    value?: any;
-    message: string;
-  }[];
+  validations?: SurveyQuestionValidation[];
 }
-
 
 @Component({
   selector: 'app-survey',
@@ -72,7 +73,7 @@ export class SurveyComponent {
   }
 
   loadSurveyQuestions(): void {
-    // In a real app, you might fetch this from an API
+    // Expanded survey questions with more fields and types
     this.surveyQuestions = [
       {
         id: 'name',
@@ -91,34 +92,49 @@ export class SurveyComponent {
         required: true,
         validations: [
           { type: 'required', message: 'Age is required' },
-          { type: 'min', value: 18, message: 'Must be at least 18 years old' },
+          { type: 'min', value: 0, message: 'Age must be a positive number' },
           { type: 'max', value: 120, message: 'Must be less than 120 years old' }
         ]
       },
       {
-        id: 'satisfaction',
+        id: 'gender',
         type: 'radio',
-        question: 'How satisfied are you with our service?',
+        question: 'What is your gender?',
         required: true,
-        options: ['Very Satisfied', 'Satisfied', 'Neutral', 'Dissatisfied', 'Very Dissatisfied'],
+        options: ['Male', 'Female', 'Non-Binary', 'Prefer not to say'],
         validations: [
-          { type: 'required', message: 'Please select an option' }
+          { type: 'required', message: 'Please select a gender' }
         ]
       },
       {
-        id: 'improvements',
+        id: 'country',
+        type: 'dropdown',
+        question: 'What is your country of residence?',
+        required: true,
+        options: [
+          'United States', 'Canada', 'United Kingdom', 'Australia', 
+          'Germany', 'France', 'Japan', 'India', 'Brazil', 'Other'
+        ],
+        validations: [
+          { type: 'required', message: 'Country is required' }
+        ]
+      },
+      {
+        id: 'interests',
         type: 'multiselect',
-        question: 'Which areas do you think we should improve?',
+        question: 'Select your areas of interest',
         required: false,
-        options: ['User Interface', 'Performance', 'Features', 'Customer Support', 'Documentation'],
+        options: ['Technology', 'Sports', 'Music', 'Travel', 'Reading', 'Cooking'],
         validations: []
       },
       {
         id: 'feedback',
         type: 'text',
-        question: 'Do you have any additional feedback for us?',
+        question: 'Additional comments or feedback',
         required: false,
-        validations: []
+        validations: [
+          { type: 'maxlength', value: 500, message: 'Feedback must be less than 500 characters' }
+        ]
       }
     ];
   }
@@ -135,14 +151,22 @@ export class SurveyComponent {
       
       if (question.validations) {
         question.validations.forEach(validation => {
-          if (validation.type === 'minlength') {
-            validators.push(Validators.minLength(validation.value));
-          } else if (validation.type === 'min') {
-            validators.push(Validators.min(validation.value));
-          } else if (validation.type === 'max') {
-            validators.push(Validators.max(validation.value));
-          } else if (validation.type === 'pattern') {
-            validators.push(Validators.pattern(validation.value));
+          switch (validation.type) {
+            case 'minlength':
+              validators.push(Validators.minLength(validation.value));
+              break;
+            case 'maxlength':
+              validators.push(Validators.maxLength(validation.value));
+              break;
+            case 'min':
+              validators.push(Validators.min(validation.value));
+              break;
+            case 'max':
+              validators.push(Validators.max(validation.value));
+              break;
+            case 'pattern':
+              validators.push(Validators.pattern(validation.value));
+              break;
           }
         });
       }
@@ -162,24 +186,17 @@ export class SurveyComponent {
     const question = this.surveyQuestions.find(q => q.id === questionId);
     if (!question) return '';
     
-    if (control.errors['required']) {
-      return question.validations?.find(v => v.type === 'required')?.message || 'This field is required';
-    }
+    // Find and return appropriate error message based on validation type
+    const errorTypes = [
+      'required', 'minlength', 'maxlength', 
+      'min', 'max', 'pattern'
+    ];
     
-    if (control.errors['minlength']) {
-      return question.validations?.find(v => v.type === 'minlength')?.message || 'Minimum length not met';
-    }
-    
-    if (control.errors['min']) {
-      return question.validations?.find(v => v.type === 'min')?.message || `Must be at least ${question.validations?.find(v => v.type === 'min')?.value}`;
-    }
-    
-    if (control.errors['max']) {
-      return question.validations?.find(v => v.type === 'max')?.message || `Must be at most ${question.validations?.find(v => v.type === 'max')?.value}`;
-    }
-    
-    if (control.errors['pattern']) {
-      return question.validations?.find(v => v.type === 'pattern')?.message || 'Invalid format';
+    for (const errorType of errorTypes) {
+      if (control.errors[errorType]) {
+        const validationError = question.validations?.find(v => v.type === errorType);
+        return validationError?.message || `Invalid ${errorType} validation`;
+      }
     }
     
     return 'Invalid input';
@@ -203,7 +220,17 @@ export class SurveyComponent {
       responses: this.surveyForm.value
     };
     
-    // Save to local storage
+    // Store user details in localStorage
+    localStorage.setItem('userDetails', JSON.stringify({
+      name: this.surveyForm.get('name')?.value,
+      age: this.surveyForm.get('age')?.value,
+      gender: this.surveyForm.get('gender')?.value,
+      country: this.surveyForm.get('country')?.value,
+      interests: this.surveyForm.get('interests')?.value,
+      feedback: this.surveyForm.get('feedback')?.value
+    }));
+    
+    // Save all survey responses to localStorage
     const allResponses = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
     allResponses.push(surveyResponses);
     localStorage.setItem('surveyResponses', JSON.stringify(allResponses));
